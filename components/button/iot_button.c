@@ -97,6 +97,7 @@ static void button_handler(button_dev_t *btn)
         if (btn->button_level == btn->active_level) {
             btn->event = (uint8_t)BUTTON_PRESS_DOWN;
             CALL_EVENT_CB(BUTTON_PRESS_DOWN);
+            CALL_EVENT_CB(BUTTON_PRESS_NORMAL);
             btn->ticks = 0;
             btn->repeat = 1;
             btn->state = 1;
@@ -109,6 +110,7 @@ static void button_handler(button_dev_t *btn)
         if (btn->button_level != btn->active_level) {
             btn->event = (uint8_t)BUTTON_PRESS_UP;
             CALL_EVENT_CB(BUTTON_PRESS_UP);
+            CALL_EVENT_CB(BUTTON_PRESS_NORMAL);
             btn->ticks = 0;
             btn->state = 2;
 
@@ -123,6 +125,7 @@ static void button_handler(button_dev_t *btn)
         if (btn->button_level == btn->active_level) {
             btn->event = (uint8_t)BUTTON_PRESS_DOWN;
             CALL_EVENT_CB(BUTTON_PRESS_DOWN);
+            CALL_EVENT_CB(BUTTON_PRESS_NORMAL);
             btn->repeat++;
             CALL_EVENT_CB(BUTTON_PRESS_REPEAT); // repeat hit
             btn->ticks = 0;
@@ -145,6 +148,7 @@ static void button_handler(button_dev_t *btn)
         if (btn->button_level != btn->active_level) {
             btn->event = (uint8_t)BUTTON_PRESS_UP;
             CALL_EVENT_CB(BUTTON_PRESS_UP);
+            CALL_EVENT_CB(BUTTON_PRESS_NORMAL);
             if (btn->ticks < SHORT_TICKS) {
                 btn->ticks = 0;
                 btn->state = 2; //repeat press
@@ -165,6 +169,7 @@ static void button_handler(button_dev_t *btn)
         } else { //releasd
             btn->event = (uint8_t)BUTTON_PRESS_UP;
             CALL_EVENT_CB(BUTTON_PRESS_UP);
+            CALL_EVENT_CB(BUTTON_PRESS_NORMAL);
             btn->state = 0; //reset
             btn->long_press_hold_cnt = 0;
         }
@@ -326,6 +331,7 @@ esp_err_t iot_button_register_cb(button_handle_t btn_handle, button_event_t even
     BTN_CHECK(NULL != btn_handle, "Pointer of handle is invalid", ESP_ERR_INVALID_ARG);
     BTN_CHECK(event < BUTTON_EVENT_MAX, "event is invalid", ESP_ERR_INVALID_ARG);
     button_dev_t *btn = (button_dev_t *) btn_handle;
+    BTN_CHECK(NULL == btn->cb[event], "Callback is already registered", ESP_ERR_INVALID_STATE);
     btn->cb[event] = cb;
     btn->usr_data[event] = usr_data;
     return ESP_OK;
